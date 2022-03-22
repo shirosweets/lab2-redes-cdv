@@ -16,6 +16,19 @@ Consecutivos: pedidos en orden, hasta que finaliza sesión
 Comandos y respuetas
 'response.status'+' '+'response.message'+'\r\n'
 
+Para correr el servidor (consola 1):
+
+```bash
+python server.py
+```
+
+Para correr el cliente se debe colocar lo siguiente (consola 2):
+
+```bash
+python client.py -p 19500 -v ERROR 0.0.0.0
+```
+dónde 0.0.0.0 es el dominio, en este caso es lo mismo colocar 0.0.0.0 que `localhost`
+
 # Preguntas
 1. ¿Qué estrategias existen para poder implementar este mismo servidor pero con
 capacidad de atender múltiples clientes simultáneamente? Investigue y responda
