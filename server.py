@@ -6,10 +6,10 @@
 # Copyright 2008-2010 Natalia Bidart y Daniel Moisset
 # $Id: server.py 656 2013-03-18 23:49:11Z bc $
 
-import optparse
 import socket
+import optparse
+import constants
 from connection import Connection
-from constants import *
 
 
 class Server(object):
@@ -18,8 +18,12 @@ class Server(object):
     especificados donde se reciben nuevas conexiones de clientes.
     """
 
-    def __init__(self, addr=DEFAULT_ADDR, port=DEFAULT_PORT,
-                 directory=DEFAULT_DIR):
+    def __init__(
+        self,
+        addr=constants.DEFAULT_ADDR,
+        port=constants.DEFAULT_PORT,
+        directory=constants.DEFAULT_DIR
+    ):
         print("Serving %s on %s:%s." % (directory, addr, port))
         # FALTA: Crear socket del servidor, configurarlo, asignarlo
         # a una dirección y puerto, etc.
@@ -53,13 +57,14 @@ def main():
     parser = optparse.OptionParser()
     parser.add_option(
         "-p", "--port",
-        help="Número de puerto TCP donde escuchar", default=DEFAULT_PORT)
+        help="Número de puerto TCP donde escuchar",
+        default=constants.DEFAULT_PORT)
     parser.add_option(
         "-a", "--address",
-        help="Dirección donde escuchar", default=DEFAULT_ADDR)
+        help="Dirección donde escuchar", default=constants.DEFAULT_ADDR)
     parser.add_option(
         "-d", "--datadir",
-        help="Directorio compartido", default=DEFAULT_DIR)
+        help="Directorio compartido", default=constants.DEFAULT_DIR)
 
     options, args = parser.parse_args()
     if len(args) > 0:

@@ -3,9 +3,16 @@
 # Copyright 2014 Carlos Bederián
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
 
+# Imports de librerías
 import socket
-from constants import *
 from base64 import b64encode
+
+
+# Imports locales
+import constants
+from parser import Parser, MalformedParserException, UnknownParserException
+from handler import Handler
+from response_manager import ResponseManager
 
 
 class Connection(object):
@@ -24,6 +31,39 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        print(f"START handle")
+        print(f"START handle")  # FIXME
+        parser = Parser(self.socket) 
+        response_manager = ResponseManager(self.socket)
+
+        # Atiende todos los comandos hasta que encuentra un
+        try:
+            while True:
+                try:
+                    # Obtenemos el comando parseado
+                    command = parser.get_command()
+                except MalformedParserException as malformedException:
+                    print(f"{malformedException}")  # FIXME
+                    response_manager.send_error(constants.BAD_EOL)
+                    break
+
+                except UnknownParserException as UnknownException:
+                    print(f"{UnknownException}")  # FIXME
+                    response_manager.send_error(constants.BAD_REQUEST)
+                    break
+
+                handler = Handler(command)
+                handler.handle()
+
+                if handler.status == constants.HANDLER_STATUS_EXIT:
+                    break
+        except Exception as exception:
+            print(
+                f"CODE ERROR: {constants.INTERNAL_ERROR} - "
+                f"Internal Error. Exception: {exception}"
+            )
+            response_manager.send_error(constants.INTERNAL_ERROR)
+
+        # Cierra la conexión
         self.socket.close()
-        pri
+
+        print(f"END handle")  # FIXME
