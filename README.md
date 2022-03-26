@@ -1,12 +1,17 @@
 # Laboratorio N°2
 
+- [Integrantes](#integrantes)
+
 # Integrantes
+- Carrizo, Ernesto.
+- Domínguez, Agustín.
+- Vispo, Valentina.
 
 # Comprendiendo el código
 
 - `server.py`
 
-`directory` -> directorio virtual del usuario que se encuentra en ese momento. 
+`directory` -> directorio virtual del usuario que se encuentra en ese momento.
 
 # Comprendiendo
 
