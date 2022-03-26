@@ -55,8 +55,8 @@ class Client(object):
         self.s.settimeout(timeout)
         message += EOL  # Completar el mensaje con un fin de línea
         while message:
-            logging.debug("Enviando el (resto del) mensaje %s."
-                          % repr(message))
+            logging.debug(
+                "Enviando el (resto del) mensaje %s." % repr(message))
             bytes_sent = self.s.send(message.encode("ascii"))
             assert bytes_sent > 0
             message = message[bytes_sent:]
@@ -83,7 +83,7 @@ class Client(object):
         Devuelve la línea, eliminando el terminaodr y los espacios en blanco
         al principio y al final.
         """
-        while not EOL in self.buffer and self.connected:
+        while EOL not in self.buffer and self.connected:
             if timeout is not None:
                 t1 = time.process_time()
             self._recv(timeout)
@@ -209,18 +209,22 @@ def main():
 
     # Parsear argumentos
     parser = optparse.OptionParser(usage="%prog [options] server")
-    parser.add_option("-p", "--port",
-                      help="Numero de puerto TCP donde escuchar", default=DEFAULT_PORT)
-    parser.add_option("-v", "--verbose", dest="level", action="store",
-                      help="Determina cuanta informacion de depuracion a mostrar"
-                      "(valores posibles son: ERROR, WARN, INFO, DEBUG)",
-                      default="ERROR")
+    parser.add_option(
+        "-p", "--port",
+        help="Numero de puerto TCP donde escuchar",
+        default=DEFAULT_PORT)
+    parser.add_option(
+        "-v", "--verbose", dest="level",
+        action="store",
+        help="Determina cuanta informacion de depuracion a mostrar"
+        "(valores posibles son: ERROR, WARN, INFO, DEBUG)",
+        default="ERROR")
     options, args = parser.parse_args()
     try:
         port = int(options.port)
     except ValueError:
-        sys.stderr.write("Numero de puerto invalido: %s\n"
-                         % repr(options.port))
+        sys.stderr.write(
+            "Numero de puerto invalido: %s\n" % repr(options.port))
         parser.print_help()
         sys.exit(1)
 

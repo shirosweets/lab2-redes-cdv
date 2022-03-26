@@ -35,7 +35,6 @@ class Server(object):
         # Listening
         self.socket.listen(1)
 
-
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez

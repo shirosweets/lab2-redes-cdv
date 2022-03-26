@@ -7,6 +7,7 @@ import socket
 from constants import *
 from base64 import b64encode
 
+
 class Connection(object):
     """
     Conexión punto a punto entre el servidor y un cliente.
