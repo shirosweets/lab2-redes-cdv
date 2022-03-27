@@ -47,7 +47,7 @@ class Server(object):
         while True:
             # Aceptar una conexión al server, crear una
             # connection para la conexión y atenderla hasta que termine.
-            connection = Connection(self.socket.accept(), self.directory)
+            connection = Connection(self.socket.accept()[0], self.directory)
             connection.handle()
 
 

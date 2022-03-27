@@ -23,7 +23,7 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        # FALTA: Inicializar atributos de Connection
+        # NOTE FALTA Inicializar atributos de Connection
         self.socket = socket
         self.current_directory = directory
 
@@ -32,15 +32,18 @@ class Connection(object):
         Atiende eventos de la conexión hasta que termina.
         """
         print(f"START handle")  # FIXME
-        parser = Parser(self.socket) 
+        # Instanciamos Parser
+        parser = Parser(self.socket)
+
+        # Instanciamos ResponseManager
         response_manager = ResponseManager(self.socket)
 
-        # Atiende todos los comandos hasta que encuentra un
+        # Atiende todos los comandos hasta que encuentra un fin de línea
         try:
             while True:
                 try:
                     # Obtenemos el comando parseado
-                    command = parser.get_command()
+                    command = parser.get_next_command()
                 except MalformedParserException as malformedException:
                     print(f"{malformedException}")  # FIXME
                     response_manager.send_error(constants.BAD_EOL)
@@ -51,8 +54,8 @@ class Connection(object):
                     response_manager.send_error(constants.BAD_REQUEST)
                     break
 
-                handler = Handler(command)
-                handler.handle()
+                handler = Handler(command) # Instancia de $Handler
+                handler.handle() # Procedimiento para atender el comando
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
                     break

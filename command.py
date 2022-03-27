@@ -1,6 +1,9 @@
 
 class Command():
-    # command, list, args
-    def __init__(name: str, arguments: list[str]):
+    """
+    Comandos
+    """
+    def __init__(self, name: str, arguments: list[str]):
+        print("__init__ COMMAND")  # FIXME
         self.name = name
         self.arguments = arguments
