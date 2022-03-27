@@ -54,8 +54,11 @@ class Connection(object):
                     response_manager.send_error(constants.BAD_REQUEST)
                     break
 
-                handler = Handler(command) # Instancia de $Handler
-                handler.handle() # Procedimiento para atender el comando
+                # Instancia de $Handler
+                handler = Handler(command)
+
+                # Procedimiento para atender el comando
+                handler.handle()
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
                     break

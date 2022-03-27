@@ -127,7 +127,7 @@ dónde 0.0.0.0 es el dominio, en este caso es lo mismo colocar 0.0.0.0 que `loca
 - `command.py`
 - `response_manager.py`
 - `command.py`
-
+- `HFTP_Exception.py`
 
 # Preguntas
 
@@ -147,3 +147,9 @@ servidor desde la IP “localhost”, “127.0.0.1” o la ip “0.0.0.0”?
 Los commits que empiezan con *"Pair Programming"* son aquellos commits que fueron realizados de manera conjunta remota, mientras que los commits realizados por el usuario *"Visita"* son aquellos commits que fueron realizados de manera conjunta presencial durante el horario del laboratorio.
 
 Cuando se realizan cambios individuales se van a realizar Pull Request a la branch principal.
+
+## PEP8
+
+```bash
+pycodestyle .
+```

@@ -8,3 +8,4 @@ class ResponseManager():
 
     def send_error(self, error_code: str):
         print(f"error_code: {error_code}")
+        # TODO Read send and recvfrom_into

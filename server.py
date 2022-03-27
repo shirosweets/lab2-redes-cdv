@@ -25,7 +25,7 @@ class Server(object):
         directory=constants.DEFAULT_DIR
     ):
         print("Serving %s on %s:%s." % (directory, addr, port))
-        # FALTA: Crear socket del servidor, configurarlo, asignarlo
+        # NOTE FALTA Crear socket del servidor, configurarlo, asignarlo
         # a una dirección y puerto, etc.
 
         self.directory = directory

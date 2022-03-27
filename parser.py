@@ -2,20 +2,7 @@ import socket
 
 import constants
 from command import Command
-
-
-class MalformedParserException(Exception):
-    """
-    Malformed Parser Exception
-    """
-    pass
-
-
-class UnknownParserException(Exception):
-    """
-    Unknown Parser Exception
-    """
-    pass
+from HFTP_Exception import MalformedParserException, UnknownParserException
 
 
 class Parser(object):
