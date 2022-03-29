@@ -1,6 +1,6 @@
 import socket
-
 import constants
+
 from command import Command
 from HFTP_Exception import MalformedParserException, UnknownParserException
 
