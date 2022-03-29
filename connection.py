@@ -54,7 +54,7 @@ class Connection(object):
                     response_manager.send_error(constants.BAD_REQUEST)
                     break
 
-                # Instancia de $Handler
+                # Instancia de Handler
                 handler = Handler(command)
 
                 # Procedimiento para atender el comando
