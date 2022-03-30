@@ -1,5 +1,7 @@
 from http import client
+from logging import exception
 import sys
+import os
 import base64
 import constants
 
@@ -47,20 +49,27 @@ class Handler():
         """
         Ejecuta el comando `get_file_listing`
         """
-        pass
+        directory = os.listdir()
+        return directory
 
     def handle_get_metadata(self):
         """
         Ejecuta el comando `get_metadata`
         """
-        pass
+        if (self.command.arguments.__len__ == 1):
+            size = os.path.getsize(self.command.arguments[0])
+        else:
+            exception = HFTPException(constants.INVALID_ARGUMENTS,
+                    "Invalid amount of arguments")
+            raise exception
+        return size
 
     def handle_get_slice(self):
         """
         Ejecuta el comando `get_slice`
         """
         if (self.command.arguments.__len__ == 3 ):
-            file_size = self.handle_get_metadata(self.command.arguments[0])
+            file_size = os.path.getsize(self.command.arguments[0])
             request_size = self.command.arguments[1]+self.command.arguments[2]
             if (file_size >= request_size):
                 file = open(self.command.arguments[0],"r")
