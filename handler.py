@@ -49,7 +49,12 @@ class Handler():
         """
         Ejecuta el comando `get_file_listing`
         """
-        directory = os.listdir()
+        if(self.command.arguments.__len__ == 0):
+            directory = os.listdir()
+        else:
+            exception = HFTPException(constants.INVALID_ARGUMENTS,
+                    "Invalid amount of arguments")
+            raise exception
         return directory
 
     def handle_get_metadata(self):
