@@ -35,7 +35,7 @@ PARSER_STATUS_MALFORMED = "MALFORMED"
 PARSER_STATUS_UNKNOWN = "UNKNOWN"
 
 
-error_messages = {
+code_messages = {
     CODE_OK: "OK",
     # 1xx: Errores fatales (no se pueden atender más pedidos)
     BAD_EOL: "BAD EOL",
@@ -50,7 +50,7 @@ error_messages = {
 
 
 def valid_status(s):
-    return s in list(error_messages.keys())
+    return s in list(code_messages.keys())
 
 
 def fatal_status(s):

@@ -39,7 +39,7 @@ class Parser(object):
 
         else:
             # Comando malformado, levantamos un error
-            raise MalformedParserException(f"Parser Error: {constants.PARSER_STATUS_MALFORMED}")
+            raise MalformedParserException()
 
         command = Command(words[0], words[1:])
         return command

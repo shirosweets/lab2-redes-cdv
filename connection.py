@@ -6,6 +6,7 @@
 # Imports de librerías
 import socket
 from base64 import b64encode
+from HFTP_Exception import InternalErrorException
 
 
 # Imports locales
@@ -46,12 +47,12 @@ class Connection(object):
                     command = parser.get_next_command()
                 except MalformedParserException as malformedException:
                     print(f"{malformedException}")  # FIXME
-                    response_manager.send_error(constants.BAD_EOL)
+                    response_manager.send_error(malformedException)
                     break
 
                 except UnknownParserException as UnknownException:
                     print(f"{UnknownException}")  # FIXME
-                    response_manager.send_error(constants.BAD_REQUEST)
+                    response_manager.send_error(UnknownException)
                     break
 
                 # Instancia de Handler
@@ -67,7 +68,7 @@ class Connection(object):
                 f"CODE ERROR: {constants.INTERNAL_ERROR} - "
                 f"Internal Error. Exception: {exception}"
             )
-            response_manager.send_error(constants.INTERNAL_ERROR)
+            response_manager.send_error(InternalErrorException(exception))
 
         # Cierra la conexión
         self.socket.close()

@@ -20,7 +20,7 @@ class MalformedParserException(HFTPException):
 
     Excepciones malformadas del Parser.
     """
-    def __init__(self, error_code: int, error_msg: str):
+    def __init__(self):
         super().__init__(
             constants.BAD_EOL,
             "found \\n without \\r",
@@ -34,9 +34,22 @@ class UnknownParserException(HFTPException):
 
     Excepciones desconocidas del Parser.
     """
-    def __init__(self, error_code: int, error_msg: str):
+    def __init__(self):
         super().__init__(
             constants.BAD_REQUEST,
             "Request was no accepted",
             constants.UnknownParserException
+        )
+
+class InternalErrorException(HFTPException):
+    """
+    Internal Error Exception.
+
+    Excepciones internal del servidor.
+    """
+    def __init__(self, exception: str):
+        super().__init__(
+            constants.INTERNAL_ERROR,
+            str(exception),
+            constants.code_messages[constants.INTERNAL_ERROR]
         )
