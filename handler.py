@@ -29,13 +29,13 @@ class Handler():
 
         # Corroboramos si el comando es válido
         if (self.command.name == self.command.COMMAND_GET_FILE_LISTING):
-            self.handle_get_file_listing()
+            return self.handle_get_file_listing()
         elif (self.command.name == self.command.COMMAND_GET_METADATA):
-            self.handle_get_metadata()
+            return self.handle_get_metadata()
         elif (self.command.name == self.command.COMMAND_GET_SLICE):
-            self.handle_get_slice()
+            return self.handle_get_slice()
         elif (self.command.name == self.command.COMMAND_QUIT):
-            self.handle_quit()
+            return self.handle_quit()
         else:
             # No encontró ningún comando válido...
             exception = HFTPException(
