@@ -1,8 +1,14 @@
+from http import client
+from logging import exception
 import sys
+import os
+import base64
 import constants
-from HFTP_Exception import HFTPException
 
+from client import Client
+from asyncore import read
 from command import Command
+from HFTP_Exception import HFTPException
 
 
 class Handler():
@@ -43,20 +49,50 @@ class Handler():
         """
         Ejecuta el comando `get_file_listing`
         """
-        pass
+        if(len(self.command.arguments) == 0):
+            directory = os.listdir()
+        else:
+            exception = HFTPException(constants.INVALID_ARGUMENTS,
+                    "Invalid amount of arguments")
+            self.status = constants.HANDLER_INVALID_COMMAND
+            raise exception
+        return directory
 
     def handle_get_metadata(self):
         """
         Ejecuta el comando `get_metadata`
         """
-        pass
+        if (len(self.command.arguments) == 1):
+            size = os.path.getsize(self.command.arguments[0])
+        else:
+            exception = HFTPException(constants.INVALID_ARGUMENTS,
+                    "Invalid amount of arguments")
+            self.status = constants.HANDLER_INVALID_COMMAND
+            raise exception
+        return size
 
     def handle_get_slice(self):
         """
         Ejecuta el comando `get_slice`
         """
+        if (len(self.command.arguments) == 3 ):
+            file_size = os.path.getsize(self.command.arguments[0])
+            request_size = self.command.arguments[1]+self.command.arguments[2]
+            if (file_size >= request_size):
+                file = open(self.command.arguments[0],"r")
+                data = base64.b64encode(read(file, request_size))
+            else:
+                exception = HFTPException(constants.BAD_OFFSET,
+                        "Amount of bytes out of bounds")
+                self.status = constants.HANDLER_INVALID_COMMAND
+                raise exception
+        else:
+            exception = HFTPException(constants.INVALID_ARGUMENTS,
+                    "Amount of arguments must be 3")
+            self.status = constants.HANDLER_INVALID_COMMAND
+            raise exception
+        return data
         # TODO @Ernesto
-        pass
 
     def handle_quit(self):
         """
