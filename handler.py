@@ -49,11 +49,12 @@ class Handler():
         """
         Ejecuta el comando `get_file_listing`
         """
-        if(self.command.arguments.__len__ == 0):
+        if(len(self.command.arguments) == 0):
             directory = os.listdir()
         else:
             exception = HFTPException(constants.INVALID_ARGUMENTS,
                     "Invalid amount of arguments")
+            self.status = constants.HANDLER_INVALID_COMMAND
             raise exception
         return directory
 
@@ -61,11 +62,12 @@ class Handler():
         """
         Ejecuta el comando `get_metadata`
         """
-        if (self.command.arguments.__len__ == 1):
+        if (len(self.command.arguments) == 1):
             size = os.path.getsize(self.command.arguments[0])
         else:
             exception = HFTPException(constants.INVALID_ARGUMENTS,
                     "Invalid amount of arguments")
+            self.status = constants.HANDLER_INVALID_COMMAND
             raise exception
         return size
 
@@ -73,7 +75,7 @@ class Handler():
         """
         Ejecuta el comando `get_slice`
         """
-        if (self.command.arguments.__len__ == 3 ):
+        if (len(self.command.arguments) == 3 ):
             file_size = os.path.getsize(self.command.arguments[0])
             request_size = self.command.arguments[1]+self.command.arguments[2]
             if (file_size >= request_size):
@@ -82,10 +84,12 @@ class Handler():
             else:
                 exception = HFTPException(constants.BAD_OFFSET,
                         "Amount of bytes out of bounds")
+                self.status = constants.HANDLER_INVALID_COMMAND
                 raise exception
         else:
             exception = HFTPException(constants.INVALID_ARGUMENTS,
                     "Amount of arguments must be 3")
+            self.status = constants.HANDLER_INVALID_COMMAND
             raise exception
         return data
         # TODO @Ernesto
