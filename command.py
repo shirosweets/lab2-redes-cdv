@@ -5,7 +5,7 @@ class Command():
     """
 
     def __init__(self, name: str, arguments: list):
-        print("__init__ COMMAND")  # FIXME
+        print(f"__init__ COMMAND: {name}")  # FIXME
         self.name = name
         self.arguments = arguments
         self.COMMAND_GET_SLICE = 'get_slice'

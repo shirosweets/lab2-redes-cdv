@@ -15,9 +15,10 @@ class Handler():
     """
     Manejador de comandos.
     """
-    def __init__(self, command: Command):
+    def __init__(self, command: Command, base_dir: str):
         self.command: Command = command
         self.status = constants.HANDLER_STATUS_OK
+        self.base_dir = base_dir
 
     def handle(self):
         """
@@ -25,6 +26,7 @@ class Handler():
 
         Si recibe un comando inválido levanta una excepción y finaliza.
         """
+        self.status = constants.HANDLER_STATUS_OK
         print(f">> Executing command: {self.command.name} {' '.join(self.command.arguments)}")
 
         # Corroboramos si el comando es válido
@@ -50,7 +52,7 @@ class Handler():
         Ejecuta el comando `get_file_listing`
         """
         if(len(self.command.arguments) == 0):
-            directory = os.listdir()
+            directory = os.listdir(self.base_dir)
         else:
             exception = HFTPException(constants.INVALID_ARGUMENTS,
                     "Invalid amount of arguments")
@@ -63,24 +65,45 @@ class Handler():
         Ejecuta el comando `get_metadata`
         """
         if (len(self.command.arguments) == 1):
-            size = os.path.getsize(self.command.arguments[0])
+            path = self.base_dir + "/" + self.command.arguments[0]
+            print(f"metadata path: {path}") # FIXME
+            size = os.path.getsize(path)
         else:
             exception = HFTPException(constants.INVALID_ARGUMENTS,
                     "Invalid amount of arguments")
             self.status = constants.HANDLER_INVALID_COMMAND
             raise exception
-        return size
+        return_list = list()
+        return_list.append(str(size))
+        return return_list
 
     def handle_get_slice(self):
         """
         Ejecuta el comando `get_slice`
         """
         if (len(self.command.arguments) == 3 ):
-            file_size = os.path.getsize(self.command.arguments[0])
-            request_size = self.command.arguments[1]+self.command.arguments[2]
+            path = self.base_dir + "/" + self.command.arguments[0]
+            file_size = os.path.getsize(path)
+            request_size = int(
+                self.command.arguments[1]) + int(self.command.arguments[2]
+            )
+
+            # print(f"request_size: {request_size}")  # FIXME
             if (file_size >= request_size):
-                file = open(self.command.arguments[0],"r")
-                data = base64.b64encode(read(file, request_size))
+                try:
+                    with open(path, "r") as file:
+                        # Bytes
+                        encoded_read = file.read(request_size).encode('ascii')
+
+                        # Se encodea en base64 para que entre en tipo ASCII
+                        data = base64.b64encode(encoded_read).decode('ascii')
+
+                        return_list = list()
+                        return_list.append(data)
+                        print(f"list(data) = {return_list}")
+                except IOError as error:
+                    print(f"error: {error}")
+                    raise error
             else:
                 exception = HFTPException(constants.BAD_OFFSET,
                         "Amount of bytes out of bounds")
@@ -91,11 +114,12 @@ class Handler():
                     "Amount of arguments must be 3")
             self.status = constants.HANDLER_INVALID_COMMAND
             raise exception
-        return data
-        # TODO @Ernesto
+        return return_list
 
     def handle_quit(self):
         """
         Ejecuta el comando `quit`
         """
+        print("handle_quit()")  # FIXME
         self.status = constants.HANDLER_STATUS_EXIT
+        return list()

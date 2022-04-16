@@ -1,10 +1,13 @@
 
+import sys
+import errno
 import socket
 import constants
 
 from click import command
 from command import Command
 from HFTP_Exception import HFTPException
+
 
 class ResponseManager():
     """
@@ -24,7 +27,8 @@ class ResponseManager():
         # por lo que este comando genérico funciona para todos los casos
         self.send_response(
             exception.error_code,
-            Command("dismiss", [])
+            Command("dismiss",[]),
+            []
         )
 
     def send_response(self, code: int, command: Command, lines: list = []):
@@ -42,4 +46,10 @@ class ResponseManager():
 
     def send_line(self, line: str):
         print(f"line: {line}")  # FIXME
-        self.socket.send((line + "\r\n").encode("ascii"))
+        try:
+            self.socket.send((line + "\r\n").encode("ascii"))
+        except IOError as error:
+            if error.errno == errno.EPIPE:
+                ### Handle the error
+                print("send_line() - PIPE ERROR")
+                raise error

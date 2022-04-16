@@ -5,6 +5,7 @@
 
 # Imports de librerías
 import socket
+import traceback
 from base64 import b64encode
 from HFTP_Exception import HFTPException, InternalErrorException
 
@@ -58,17 +59,26 @@ class Connection(object):
 
                 try:
                     # Instancia de Handler
-                    handler = Handler(command)
+                    handler = Handler(command, self.current_directory)
+                    print(f"handler.status = {handler.status}")  # FIXME
                     # Procedimiento para atender el comando
-                    response = handler.handle()  # FIXME: Arreglar los multiple tipos
+                    response = handler.handle()  # FIXME: Arreglar los multiples tipos
+                    print(f"response in connection.py = {response} of type: {type(response)}")  # FIXME
                 except HFTPException as hftpException:
                     response_manager.send_error(hftpException)
 
+                print(f"response_manager.send_response()")  # FIXME
+
                 response_manager.send_response(
-                    constants.CODE_OK, command, response
+                    constants.CODE_OK,
+                    command,
+                    response
                 )
 
+                print(f"handler.status = {handler.status}")  # FIXME
+
                 if handler.status == constants.HANDLER_STATUS_EXIT:
+                    print(f"handler status is '{constants.HANDLER_STATUS_EXIT}'. Closing socket")
                     break
 
         except Exception as exception:
@@ -76,7 +86,11 @@ class Connection(object):
                 f"CODE ERROR: {constants.INTERNAL_ERROR} - "
                 f"Internal Error. Exception: {exception}"
             )
-            response_manager.send_error(InternalErrorException(exception))
+            traceback.print_exc()
+            try:
+                response_manager.send_error(InternalErrorException(exception))
+            except BrokenPipeError:
+                print("Could not send error message because Socket connection was lost")
 
         # Cierra la conexión
         self.socket.close()
