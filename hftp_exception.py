@@ -1,11 +1,16 @@
-
 import constants
+
 
 class HFTPException(Exception):
     """
     Manejador de excepciones de HFTP.
     """
-    def __init__(self, error_code: int, error_msg: str, error_name = "HFTP Exception"):
+
+    def __init__(
+            self,
+            error_code: int,
+            error_msg: str,
+            error_name="HFTP Exception"):
         self.error_code = error_code
         self.error_msg = error_msg
         self.error_name = error_name
@@ -20,6 +25,7 @@ class MalformedParserException(HFTPException):
 
     Excepciones malformadas del Parser.
     """
+
     def __init__(self):
         super().__init__(
             constants.BAD_EOL,
@@ -34,6 +40,7 @@ class UnknownParserException(HFTPException):
 
     Excepciones desconocidas del Parser.
     """
+
     def __init__(self):
         super().__init__(
             constants.BAD_REQUEST,
@@ -41,12 +48,14 @@ class UnknownParserException(HFTPException):
             constants.UnknownParserException
         )
 
+
 class InternalErrorException(HFTPException):
     """
     Internal Error Exception.
 
     Excepciones internal del servidor.
     """
+
     def __init__(self, exception: str):
         super().__init__(
             constants.INTERNAL_ERROR,

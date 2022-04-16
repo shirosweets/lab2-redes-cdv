@@ -7,14 +7,16 @@
 import socket
 import traceback
 from base64 import b64encode
-from HFTP_Exception import HFTPException, InternalErrorException
-
+from hftp_exception import HFTPException, InternalErrorException
 
 # Imports locales
 import constants
-from parser import Parser, MalformedParserException, UnknownParserException
+from logger import Logger
 from handler import Handler
 from response_manager import ResponseManager
+from parser import Parser, MalformedParserException, UnknownParserException
+
+logger = Logger()
 
 
 class Connection(object):
@@ -25,7 +27,6 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        # NOTE FALTA Inicializar atributos de Connection
         self.socket = socket
         self.current_directory = directory
 
@@ -33,7 +34,8 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        print(f"START handle")  # FIXME
+        logger.log_info(f"START handle")
+
         # Instanciamos Parser
         parser = Parser(self.socket)
 
@@ -48,26 +50,29 @@ class Connection(object):
                     # Obtenemos el comando parseado
                     command = parser.get_next_command()
                 except MalformedParserException as malformedException:
-                    print(f"{malformedException}")  # FIXME
+                    logger.log_info(f"{malformedException}")
                     response_manager.send_error(malformedException)
                     break
 
                 except UnknownParserException as UnknownException:
-                    print(f"{UnknownException}")  # FIXME
+                    logger.log_info(f"{UnknownException}")
                     response_manager.send_error(UnknownException)
                     break
 
                 try:
                     # Instancia de Handler
                     handler = Handler(command, self.current_directory)
-                    print(f"handler.status = {handler.status}")  # FIXME
+                    logger.log_info(f"handler.status = {handler.status}")
+
                     # Procedimiento para atender el comando
-                    response = handler.handle()  # FIXME: Arreglar los multiples tipos
-                    print(f"response in connection.py = {response} of type: {type(response)}")  # FIXME
+                    response = handler.handle()
+                    logger.log_info(
+                        f"response in connection.py = {response} "
+                        f"of type: {type(response)}")
                 except HFTPException as hftpException:
                     response_manager.send_error(hftpException)
 
-                print(f"response_manager.send_response()")  # FIXME
+                logger.log_info(f"response_manager.send_response()")
 
                 response_manager.send_response(
                     constants.CODE_OK,
@@ -75,14 +80,16 @@ class Connection(object):
                     response
                 )
 
-                print(f"handler.status = {handler.status}")  # FIXME
+                logger.log_info(f"handler.status = {handler.status}")
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
-                    print(f"handler status is '{constants.HANDLER_STATUS_EXIT}'. Closing socket")
+                    logger.log_error(
+                        f"handler status is '{constants.HANDLER_STATUS_EXIT}'."
+                        " Closing socket")
                     break
 
         except Exception as exception:
-            print(
+            logger.log_error(
                 f"CODE ERROR: {constants.INTERNAL_ERROR} - "
                 f"Internal Error. Exception: {exception}"
             )
@@ -90,9 +97,11 @@ class Connection(object):
             try:
                 response_manager.send_error(InternalErrorException(exception))
             except BrokenPipeError:
-                print("Could not send error message because Socket connection was lost")
+                logger.log_error(
+                    "Could not send error message because "
+                    "Socket connection was lost")
 
         # Cierra la conexión
         self.socket.close()
 
-        print(f"END handle")  # FIXME
+        logger.log_info(f"END handle")  # FIXME

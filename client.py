@@ -235,7 +235,12 @@ def main():
 
     # Setar verbosidad
     code_level = DEBUG_LEVELS.get(options.level)  # convertir el str en codigo
+    logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
     logging.getLogger().setLevel(code_level)
+
+    # Configuramos los mensajes del Logger
+    # logging.StreamHandler()
+    # logging.Formatter()
 
     try:
         client = Client(args[0], port)

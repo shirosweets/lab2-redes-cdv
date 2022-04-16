@@ -1,12 +1,13 @@
 
-import sys
 import errno
 import socket
 import constants
 
-from click import command
+from logger import Logger
 from command import Command
-from HFTP_Exception import HFTPException
+from hftp_exception import HFTPException
+
+logger = Logger()
 
 
 class ResponseManager():
@@ -20,19 +21,19 @@ class ResponseManager():
 
     def send_error(self, exception: HFTPException):
         print(type(exception))
-        print(f"error_code: {exception.error_code}")  # FIXME
+        logger.log_error(f"error_code: {exception.error_code}")  # FIXME
 
         # TODO Read send and recvfrom_into
         # El comando "get_file_listing" no retorna con \r\n
         # por lo que este comando genérico funciona para todos los casos
         self.send_response(
             exception.error_code,
-            Command("dismiss",[]),
+            Command("dismiss", []),
             []
         )
 
     def send_response(self, code: int, command: Command, lines: list = []):
-        print("send_response()")  # FIXME
+        logger.log_info("send_response()")
 
         name_command: Command = command.name
 
@@ -45,11 +46,11 @@ class ResponseManager():
             self.send_line("")
 
     def send_line(self, line: str):
-        print(f"line: {line}")  # FIXME
+        logger.log_info(f"line: {line}")
         try:
             self.socket.send((line + "\r\n").encode("ascii"))
         except IOError as error:
             if error.errno == errno.EPIPE:
-                ### Handle the error
-                print("send_line() - PIPE ERROR")
+                # Handle the error
+                logger.log_error("send_line() - PIPE ERROR")
                 raise error

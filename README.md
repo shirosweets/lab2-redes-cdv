@@ -153,3 +153,13 @@ Cuando se realizan cambios individuales se van a realizar Pull Request a la bran
 ```bash
 pycodestyle .
 ```
+
+# Puertos
+
+## Cómo ubicar un puerto de escucha
+
+```bash
+sudo ss -tulwn | grep LISTEN
+```
+
+## Cómo cerrar un puerto
