@@ -6,6 +6,7 @@
 # Imports de librerías
 import socket
 from base64 import b64encode
+from HFTP_Exception import HFTPException, InternalErrorException
 
 
 # Imports locales
@@ -40,34 +41,42 @@ class Connection(object):
 
         # Atiende todos los comandos hasta que encuentra un fin de línea
         try:
+            response = []
             while True:
                 try:
                     # Obtenemos el comando parseado
                     command = parser.get_next_command()
                 except MalformedParserException as malformedException:
                     print(f"{malformedException}")  # FIXME
-                    response_manager.send_error(constants.BAD_EOL)
+                    response_manager.send_error(malformedException)
                     break
 
                 except UnknownParserException as UnknownException:
                     print(f"{UnknownException}")  # FIXME
-                    response_manager.send_error(constants.BAD_REQUEST)
+                    response_manager.send_error(UnknownException)
                     break
 
-                # Instancia de Handler
-                handler = Handler(command)
+                try:
+                    # Instancia de Handler
+                    handler = Handler(command)
+                    # Procedimiento para atender el comando
+                    response = handler.handle()  # FIXME: Arreglar los multiple tipos
+                except HFTPException as hftpException:
+                    response_manager.send_error(hftpException)
 
-                # Procedimiento para atender el comando
-                handler.handle()
+                response_manager.send_response(
+                    constants.CODE_OK, command, response
+                )
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
                     break
+
         except Exception as exception:
             print(
                 f"CODE ERROR: {constants.INTERNAL_ERROR} - "
                 f"Internal Error. Exception: {exception}"
             )
-            response_manager.send_error(constants.INTERNAL_ERROR)
+            response_manager.send_error(InternalErrorException(exception))
 
         # Cierra la conexión
         self.socket.close()

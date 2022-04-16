@@ -107,6 +107,7 @@ class Client(object):
         """
         result = None, None
         response = self.read_line(timeout)
+        print(f"Response: {response}")
         if ' ' in response:
             code, message = response.split(None, 1)
             try:

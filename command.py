@@ -1,7 +1,7 @@
 
 class Command():
     """
-    Comandos
+    Comandos válidos
     """
 
     def __init__(self, name: str, arguments: list):
