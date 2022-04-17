@@ -12,7 +12,7 @@ class Parser(object):
     """
     Parsea los mensajes obtenidos mediante la conexión por un socket.
     """
-    PARSER_BUFFER_SIZE = 2 ** 12 # bytes
+    PARSER_BUFFER_SIZE = 2 ** 12  # in bytes
 
     def __init__(self, socket: socket.socket):
         logger.log_debug("__init__ PARSER")

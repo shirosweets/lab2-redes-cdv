@@ -98,6 +98,7 @@ class InvalidArgumentsException(HFTPException):
             constants.code_messages[constants.INVALID_ARGUMENTS]
         )
 
+
 class InvalidCommandException(HFTPException):
     """
     Invalid Command Exception.
@@ -111,6 +112,7 @@ class InvalidCommandException(HFTPException):
             "Invalid Command",
             constants.code_messages[constants.INVALID_COMMAND]
         )
+
 
 class BadOffsetException(HFTPException):
     """

@@ -4,7 +4,13 @@ import constants
 
 from logger import Logger
 from command import Command
-from hftp_exception import BadOffsetException, FileNotFoundException, HFTPException, InvalidArgumentsException, InvalidCommandException
+from hftp_exception import (
+    BadOffsetException,
+    FileNotFoundException,
+    InvalidArgumentsException,
+    InvalidCommandException
+)
+
 
 logger = Logger()
 
@@ -107,9 +113,12 @@ class Handler():
         if (len(self.command.arguments) == 3):
             path = f"{self.base_dir}/{self.command.arguments[0]}"
             file_size = os.path.getsize(path)
-            arg_1 = int(self.command.arguments[1])
-            arg_2 = int(self.command.arguments[2])
-            request_size = arg_1 + arg_2
+            try:
+                arg_1 = int(self.command.arguments[1])
+                arg_2 = int(self.command.arguments[2])
+                request_size = arg_1 + arg_2
+            except ValueError:
+                raise InvalidArgumentsException()
 
             if (file_size >= request_size):
                 try:
