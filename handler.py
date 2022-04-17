@@ -105,28 +105,32 @@ class Handler():
             path = f"{self.base_dir}/{self.command.arguments[0]}"
             file_size = os.path.getsize(path)
             try:
-                arg_1 = int(self.command.arguments[1])
-                arg_2 = int(self.command.arguments[2])
-                request_size = arg_1 + arg_2
+                offset = int(self.command.arguments[1])
+                slice_size = int(self.command.arguments[2])
+                request_size = offset + slice_size
             except ValueError:
                 raise InvalidArgumentsException()
 
             if (file_size >= request_size):
                 try:
+                    # No es necesario llamar a close ya que
+                    # el 'with' lo hace automáticamente
                     with open(path, "r") as file:
-                        # Bytes
-                        encoded_read = file.read(request_size).encode('ascii')
+                        # Se mueve al punto donde tiene que empezar a leer
+                        file.seek(offset)
+                        # Bytes para cumplir con el tipo esperado en b64encode
+                        encoded_read = file.read(slice_size).encode('ascii')
                         logger.log_debug(
                             "encoded_read (of size "
                             f"{request_size}): {encoded_read}")
 
-                        # Se encodea en base64 para que entre en tipo ASCII
-                        data = base64.b64encode(encoded_read).decode('ascii')
-                        logger.log_debug(f"base64 encoded data: {data}")
+                    # Se encodea en base64 para que entre en tipo ASCII
+                    data = base64.b64encode(encoded_read).decode('ascii')
+                    logger.log_debug(f"base64 encoded data: {data}")
 
-                        return_list = list()
-                        return_list.append(data)
-                        logger.log_debug(f"list(data) = {return_list}")
+                    return_list = list()
+                    return_list.append(data)
+                    logger.log_debug(f"list(data) = {return_list}")
                 except IOError as error:
                     logger.log_error(f"error: {error}")
                     raise error
