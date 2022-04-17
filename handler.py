@@ -4,7 +4,7 @@ import constants
 
 from logger import Logger
 from command import Command
-from hftp_exception import HFTPException
+from hftp_exception import BadOffsetException, FileNotFoundException, HFTPException, InvalidArgumentsException, InvalidCommandException
 
 logger = Logger()
 
@@ -49,12 +49,13 @@ class Handler():
                 f"'{self.command.name}' command"
             )
 
-            exception = HFTPException(
-                constants.INVALID_COMMAND,
-                "Invalid Command",
-                constants.HANDLER_INVALID_COMMAND
-            )
-            raise exception
+            # exception = HFTPException(
+            #     constants.INVALID_COMMAND,
+            #     "Invalid Command",
+            #     constants.HANDLER_INVALID_COMMAND
+            # )
+            self.status = constants.HANDLER_INVALID_COMMAND
+            raise InvalidCommandException()
 
     def handle_get_file_listing(self):
         """
@@ -65,12 +66,12 @@ class Handler():
         if(len(self.command.arguments) == 0):
             directory = os.listdir(self.base_dir)
         else:
-            exception = HFTPException(
-                constants.INVALID_ARGUMENTS,
-                "Invalid amount of arguments"
-            )
-            self.status = constants.HANDLER_INVALID_COMMAND
-            raise exception
+            # exception = HFTPException(
+            #     constants.INVALID_ARGUMENTS,
+            #     "Invalid amount of arguments"
+            # )
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
         return directory
 
     def handle_get_metadata(self):
@@ -81,15 +82,18 @@ class Handler():
 
         if (len(self.command.arguments) == 1):
             path = self.base_dir + "/" + self.command.arguments[0]
-            logger.log_debug(f"metadata path: {path}")
-            size = os.path.getsize(path)
+            logger.log_debug(f"gatting metadata of file '{path}'")
+
+            try:
+                size = os.path.getsize(path)
+                logger.log_debug(f"size of {path}: {size}")
+            except FileNotFoundError:
+                self.status = constants.FILE_NOT_FOUND
+                raise FileNotFoundException()
         else:
-            exception = HFTPException(
-                constants.INVALID_ARGUMENTS,
-                "Invalid amount of arguments"
-            )
-            self.status = constants.HANDLER_INVALID_COMMAND
-            raise exception
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
+
         return_list = list()
         return_list.append(str(size))
         return return_list
@@ -127,20 +131,14 @@ class Handler():
                     logger.log_error(f"error: {error}")
                     raise error
             else:
-                exception = HFTPException(
-                    constants.BAD_OFFSET, "Amount of bytes out of bounds"
-                )
+                # exception = HFTPException(
+                #     constants.BAD_OFFSET, "Amount of bytes out of bounds"
+                # )
                 self.status = constants.HANDLER_INVALID_COMMAND
-                logger.log_warning(f"Raising BAD_OFFSET exception...")
-                raise exception
+                raise BadOffsetException()
         else:
-            exception = HFTPException(
-                constants.INVALID_ARGUMENTS,
-                "Amount of arguments must be 3"
-            )
-            self.status = constants.HANDLER_INVALID_COMMAND
-            logger.log_warning(f"Raising INVALID_COMMAND exception...")
-            raise exception
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
         return return_list
 
     def handle_quit(self):
