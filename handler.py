@@ -55,11 +55,6 @@ class Handler():
                 f"'{self.command.name}' command"
             )
 
-            # exception = HFTPException(
-            #     constants.INVALID_COMMAND,
-            #     "Invalid Command",
-            #     constants.HANDLER_INVALID_COMMAND
-            # )
             self.status = constants.HANDLER_INVALID_COMMAND
             raise InvalidCommandException()
 
@@ -72,10 +67,6 @@ class Handler():
         if(len(self.command.arguments) == 0):
             directory = os.listdir(self.base_dir)
         else:
-            # exception = HFTPException(
-            #     constants.INVALID_ARGUMENTS,
-            #     "Invalid amount of arguments"
-            # )
             self.status = constants.HANDLER_INVALID_ARGUMENTS
             raise InvalidArgumentsException()
         return directory
@@ -140,9 +131,6 @@ class Handler():
                     logger.log_error(f"error: {error}")
                     raise error
             else:
-                # exception = HFTPException(
-                #     constants.BAD_OFFSET, "Amount of bytes out of bounds"
-                # )
                 self.status = constants.HANDLER_INVALID_COMMAND
                 raise BadOffsetException()
         else:
@@ -155,5 +143,9 @@ class Handler():
         Ejecuta el comando `quit`
         """
         logger.log_debug(f"Executing handle_quit")
+
+        if(len(self.command.arguments) != 0):
+            raise InvalidArgumentsException()
+
         self.status = constants.HANDLER_STATUS_EXIT
         return list()
