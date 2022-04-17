@@ -270,6 +270,7 @@ class TestHFTPHard(TestBase):
         client.connected = False
         client.s.close()
 
+    # TODO Descomentar
     # def test_big_file(self):
     #     self.output_file = 'bar'
     #     f = open(os.path.join(DATADIR, self.output_file), 'wb')
@@ -291,6 +292,7 @@ class TestHFTPHard(TestBase):
     #     f.close()
     #     c.close()
 
+    # TODO Descomentar
     # def test_big_filename(self):
     #     c = self.new_client()
     #     c.send('get_metadata ' + 'x' * (5 * 2 ** 20), timeout=120)

@@ -20,8 +20,8 @@ class ResponseManager():
         self.socket: socket.socket = socket
 
     def send_error(self, exception: HFTPException):
-        print(type(exception))
-        logger.log_error(f"error_code: {exception.error_code}")  # FIXME
+        logger.log_debug(f"Exception type: {type(exception)}")
+        logger.log_error(f"error_code: {exception.error_code}")
 
         # TODO Read send and recvfrom_into
         # El comando "get_file_listing" no retorna con \r\n
@@ -33,7 +33,7 @@ class ResponseManager():
         )
 
     def send_response(self, code: int, command: Command, lines: list = []):
-        logger.log_info("send_response()")
+        logger.log_debug("send_response()")
 
         name_command: Command = command.name
 
@@ -47,6 +47,7 @@ class ResponseManager():
 
     def send_line(self, line: str):
         logger.log_info(f"line: {line}")
+
         try:
             self.socket.send((line + "\r\n").encode("ascii"))
         except IOError as error:

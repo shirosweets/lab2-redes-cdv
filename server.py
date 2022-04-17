@@ -6,10 +6,13 @@
 # Copyright 2008-2010 Natalia Bidart y Daniel Moisset
 # $Id: server.py 656 2013-03-18 23:49:11Z bc $
 
+import sys
+import logging
 import socket
 import optparse
 import constants
 
+from logger import Logger
 from connection import Connection
 
 
@@ -26,8 +29,6 @@ class Server(object):
         directory=constants.DEFAULT_DIR
     ):
         print("Serving %s on %s:%s." % (directory, addr, port))
-        # NOTE FALTA Crear socket del servidor, configurarlo, asignarlo
-        # a una dirección y puerto, etc.
 
         self.directory = directory
 
@@ -59,15 +60,33 @@ def main():
     parser.add_option(
         "-p", "--port",
         help="Número de puerto TCP donde escuchar",
-        default=constants.DEFAULT_PORT)
+        default=constants.DEFAULT_PORT
+    )
+
     parser.add_option(
         "-a", "--address",
-        help="Dirección donde escuchar", default=constants.DEFAULT_ADDR)
+        help="Dirección donde escuchar",
+        default=constants.DEFAULT_ADDR
+    )
+
     parser.add_option(
         "-d", "--datadir",
-        help="Directorio compartido", default=constants.DEFAULT_DIR)
+        help="Directorio compartido",
+        default=constants.DEFAULT_DIR
+    )
+
+    parser.add_option(
+        "-v", "--verbose",
+        dest="level",
+        action="store",
+        help="Determina cuanta información de depuración mostrar"
+        "(valores posibles son: ERROR, WARN, INFO, DEBUG)",
+        default="ERROR"
+    )
 
     options, args = parser.parse_args()
+    setup_logger(options.level)
+
     if len(args) > 0:
         parser.print_help()
         sys.exit(1)
@@ -81,6 +100,21 @@ def main():
 
     server = Server(options.address, port, options.datadir)
     server.serve()
+
+
+def setup_logger(level):
+    DEBUG_LEVELS = {
+        'DEBUG': logging.DEBUG,
+        'INFO': logging.INFO,
+        'WARN': logging.WARNING,
+        'ERROR': logging.ERROR,
+    }
+
+    # Setar verbosidad
+    code_level = DEBUG_LEVELS.get(level)  # convertir el str en codigo
+    logging.basicConfig(format='[%(levelname)s] - %(message)s')
+    logger = Logger()
+    logger._logger.setLevel(code_level)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,7 @@
+from logger import Logger
+
+logger = Logger()
+
 
 class Command():
     """
@@ -5,7 +9,8 @@ class Command():
     """
 
     def __init__(self, name: str, arguments: list):
-        print(f"__init__ COMMAND: {name}")  # FIXME
+        logger.log_debug(f"__init__ COMMAND: {name}")
+
         self.name = name
         self.arguments = arguments
         self.COMMAND_GET_SLICE = 'get_slice'

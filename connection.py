@@ -34,7 +34,7 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        logger.log_info(f"START handle")
+        logger.log_debug(f"START Connection.handle()")
 
         # Instanciamos Parser
         parser = Parser(self.socket)
@@ -104,4 +104,4 @@ class Connection(object):
         # Cierra la conexión
         self.socket.close()
 
-        logger.log_info(f"END handle")  # FIXME
+        logger.log_debug(f"END Connection.handle()")

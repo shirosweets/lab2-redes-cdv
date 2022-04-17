@@ -147,6 +147,6 @@ class Handler():
         """
         Ejecuta el comando `quit`
         """
-        logger.log_debug(f"Executing handle_quit")  # FIXME
+        logger.log_debug(f"Executing handle_quit")
         self.status = constants.HANDLER_STATUS_EXIT
         return list()

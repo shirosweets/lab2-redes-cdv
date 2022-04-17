@@ -52,4 +52,4 @@ class Logger():
         de cada paso de la ejecución para llegar a un entendimiento
         de dónde ocurre el error.
         """
-        self._logger.debug(msg, exc_info=True)
+        self._logger.debug(msg)

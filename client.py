@@ -13,6 +13,9 @@ import sys
 import time
 from base64 import b64decode
 from constants import *
+from logger import Logger
+
+logger = Logger()
 
 
 class Client(object):
@@ -210,17 +213,23 @@ def main():
 
     # Parsear argumentos
     parser = optparse.OptionParser(usage="%prog [options] server")
+
     parser.add_option(
         "-p", "--port",
         help="Numero de puerto TCP donde escuchar",
-        default=DEFAULT_PORT)
+        default=DEFAULT_PORT
+    )
+
     parser.add_option(
         "-v", "--verbose", dest="level",
         action="store",
         help="Determina cuanta informacion de depuracion a mostrar"
         "(valores posibles son: ERROR, WARN, INFO, DEBUG)",
-        default="ERROR")
+        default="ERROR"
+    )
+
     options, args = parser.parse_args()
+
     try:
         port = int(options.port)
     except ValueError:
@@ -235,7 +244,7 @@ def main():
 
     # Setar verbosidad
     code_level = DEBUG_LEVELS.get(options.level)  # convertir el str en codigo
-    logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(format='[%(levelname)s] - %(message)s')
     logging.getLogger().setLevel(code_level)
 
     # Configuramos los mensajes del Logger
