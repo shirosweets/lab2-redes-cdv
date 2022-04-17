@@ -168,12 +168,24 @@ o
 sudo lsof -t -i:19500
 ```
 
+o
+
+```bash
+fuser -n tcp 19500
+```
+
 
 ## Cómo cerrar un puerto
 
 ```bash
 sudo kill $(sudo lsof -t -i:19500)
 ```
+
+```bash
+fuser -k -n tcp 19500
+```
+
+> https://poesiabinaria.net/2017/07/cerrar-puerto-tcp-ocupado-una-aplicacion-gnulinux/
 
 # Implementaciones
 

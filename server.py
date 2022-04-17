@@ -7,13 +7,17 @@
 # $Id: server.py 656 2013-03-18 23:49:11Z bc $
 
 import sys
-import logging
 import socket
+import signal
+import logging
 import optparse
 import constants
 
 from logger import Logger
 from connection import Connection
+
+
+logger = Logger()
 
 
 class Server(object):
@@ -98,8 +102,20 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    server = Server(options.address, port, options.datadir)
-    server.serve()
+    try:
+        server = Server(options.address, port, options.datadir)
+
+        def handle_sigterm(signalNumber, frame):
+            logger.log_warning(f"Received SIGTERM. Closing Socket")
+            server.socket.close()
+            sys.exit()
+
+        signal.signal(signal.SIGTERM, handle_sigterm)
+
+        server.serve()
+    except KeyboardInterrupt as keyboardInterrupt:
+        server.socket.close()
+        raise keyboardInterrupt
 
 
 def setup_logger(level):
