@@ -83,9 +83,7 @@ class Connection(object):
                 logger.log_info(f"handler.status = {handler.status}")
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
-                    logger.log_error(
-                        f"handler status is '{constants.HANDLER_STATUS_EXIT}'."
-                        " Closing socket")
+                    logger.log_info(f"User request Quit. Closing Socket")
                     break
 
         except Exception as exception:

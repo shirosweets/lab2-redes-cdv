@@ -79,7 +79,7 @@ class Handler():
 
         if (len(self.command.arguments) == 1):
             path = self.base_dir + "/" + self.command.arguments[0]
-            logger.log_debug(f"gatting metadata of file '{path}'")
+            logger.log_debug(f"getting metadata of file '{path}'")
 
             try:
                 size = os.path.getsize(path)
@@ -115,11 +115,11 @@ class Handler():
                 try:
                     # No es necesario llamar a close ya que
                     # el 'with' lo hace automáticamente
-                    with open(path, "r") as file:
-                        # Se mueve al punto donde tiene que empezar a leer
+                    # rb -> read bytes
+                    with open(path, "rb") as file:
+                        # Se mueve al punto dónde tiene que empezar a leer
                         file.seek(offset)
-                        # Bytes para cumplir con el tipo esperado en b64encode
-                        encoded_read = file.read(slice_size).encode('ascii')
+                        encoded_read = file.read(slice_size)
                         logger.log_debug(
                             "encoded_read (of size "
                             f"{request_size}): {encoded_read}")
