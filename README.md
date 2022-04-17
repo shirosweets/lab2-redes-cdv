@@ -94,6 +94,11 @@ OFFSET + SIZE ≤ filesize.
 ## Comprendiendo el código
 
 - `server.py`
+Se encarga de aceptar y administar la conexion dada una peticion del cliente.
+Este mismo llama al procedimiento que atiende las peticiones.
+
+- `connection.py`
+Atiende a los comandos dado por el cliente y devuelve una respuesta coherente con el resultado.
 
 `directory` -> directorio virtual del usuario que se encuentra en ese momento.
 
@@ -120,14 +125,22 @@ dónde 0.0.0.0 es el dominio, en este caso es lo mismo colocar 0.0.0.0 que `loca
 
 ## Implementación
 
-- `parser.py`
-
 [socket.recv](https://docs.python.org/3/library/socket.html#socket.socket.recv)
 
 - `command.py`
+Clase especializada en darle formato especifico a las consultas del cliente.
+
+- `parser.py`
+Clase encargada de realizar el analisis sintaxico de la consulta.
+
+- `handler.py`
+Clase encargada de ejecutar las consultas.
+
 - `response_manager.py`
-- `command.py`
+Clase encargada de realizar las respuestas al cliente.
+
 - `HFTP_Exception.py`
+Clase encargada de manejar las excepciones sobre nuestro protocolo.
 
 # Preguntas
 
@@ -136,10 +149,27 @@ dónde 0.0.0.0 es el dominio, en este caso es lo mismo colocar 0.0.0.0 que `loca
 capacidad de atender múltiples clientes simultáneamente? Investigue y responda
 brevemente qué cambios serían necesario en el diseño del código.
 
+Hay 2 maneras naturales de resolver este problema:
+
+Con procesos hijos (forks):
+Crear procesos hijos que atiendan a los diferentes clientes, esta manera genera mucho sobrecarga debido a que por cada cliente existira un nuevo proceso que ocupa los mismos recursos que el proceso padre.
+Se puede utilizar la libreria ´os´ para crear procesos hijos.
+Este metodo no es escalable.
+
+
+Con hilos de ejecucion (threads):
+La idea seria lanzar hilos de ejecucion donde cada uno responde a un cliente en particular.
+Existe liberias que proveen estas abstracciones en python, como ´threading´;
+Este metodo es menos costoso que la idea de forks debido a que usa los recursos del unico proceso corriendo.
+
 ## Pregunta 2
 > Pruebe ejecutar el servidor en una máquina del laboratorio, mientras utiliza el cliente
 desde otra, hacia la ip de la máquina servidor. ¿Qué diferencia hay si se corre el
 servidor desde la IP “localhost”, “127.0.0.1” o la ip “0.0.0.0”?
+
+Tanto "localhost" y "127.0.0.1" refieren a la misma direccion de IP, se utiliza para crear una conexion con la misma computadora.
+"0.0.0.0" es un caso particular donde se utiliza como "ninguna direccion en particular".
+El valor de esta direccion dependera del contexto en que se use.
 
 
 # Nuestra forma de trabajar
