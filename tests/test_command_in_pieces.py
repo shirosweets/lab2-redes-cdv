@@ -4,6 +4,7 @@ import constants
 from tests.test_base import TIMEOUT
 from tests.test_base import TestBase
 
+
 class TestHFTPCommandInPieces(TestBase):
     def test_command_in_pieces(self):
         c = self.new_client()
@@ -18,6 +19,7 @@ class TestHFTPCommandInPieces(TestBase):
 
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

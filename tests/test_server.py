@@ -134,8 +134,10 @@ class TestHFTPServer(TestBase):
         f.close()
         c.close()
 
+
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

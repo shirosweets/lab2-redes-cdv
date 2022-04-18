@@ -5,6 +5,7 @@ from tests.test_base import TIMEOUT
 from tests.test_base import DATADIR
 from tests.test_base import TestBase
 
+
 class TestHFTPHard(TestBase):
 
     def test_multiple_commands(self):
@@ -52,8 +53,10 @@ class TestHFTPHard(TestBase):
             "La lista de 1000 archivos no es la correcta")
         c.close()
 
+
 def main():
     pass
+
 
 if __name__ == '__main__':
     main()

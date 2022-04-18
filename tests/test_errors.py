@@ -5,6 +5,7 @@ from tests.test_base import TIMEOUT
 from tests.test_base import DATADIR
 from tests.test_base import TestBase
 
+
 class TestHFTPErrors(TestBase):
 
     def test_bad_eol(self):
