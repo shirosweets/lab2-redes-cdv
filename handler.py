@@ -130,7 +130,6 @@ class Handler():
 
                     return_list = list()
                     return_list.append(data)
-                    logger.log_debug(f"list(data) = {return_list}")
                 except IOError as error:
                     logger.log_error(f"error: {error}")
                     raise error
