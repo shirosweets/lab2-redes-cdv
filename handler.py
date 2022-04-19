@@ -84,7 +84,7 @@ class Handler():
             try:
                 size = os.path.getsize(path)
                 logger.log_debug(f"size of {path}: {size}")
-            except FileNotFoundError:
+            except (FileNotFoundError, OSError):
                 self.status = constants.FILE_NOT_FOUND
                 raise FileNotFoundException()
         else:
@@ -130,9 +130,9 @@ class Handler():
 
                     return_list = list()
                     return_list.append(data)
-                except IOError as error:
-                    logger.log_error(f"error: {error}")
-                    raise error
+                except (FileNotFoundError, OSError):
+                    self.status = constants.FILE_NOT_FOUND
+                    raise FileNotFoundException()
             else:
                 self.status = constants.HANDLER_INVALID_COMMAND
                 raise BadOffsetException()
