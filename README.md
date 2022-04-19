@@ -139,7 +139,7 @@ Clase encargada de ejecutar las consultas.
 - `response_manager.py`
 Clase encargada de realizar las respuestas al cliente.
 
-- `HFTP_Exception.py`
+- `hftp_exception.py`
 Clase encargada de manejar las excepciones sobre nuestro protocolo.
 
 # Preguntas
@@ -149,36 +149,110 @@ Clase encargada de manejar las excepciones sobre nuestro protocolo.
 capacidad de atender múltiples clientes simultáneamente? Investigue y responda
 brevemente qué cambios serían necesario en el diseño del código.
 
-Hay 2 maneras naturales de resolver este problema:
+Hay 3 maneras naturales de resolver este problema:
 
-Con procesos hijos (forks):
-Crear procesos hijos que atiendan a los diferentes clientes, esta manera genera mucho sobrecarga debido a que por cada cliente existira un nuevo proceso que ocupa los mismos recursos que el proceso padre.
-Se puede utilizar la libreria ´os´ para crear procesos hijos.
-Este metodo no es escalable.
+**Con procesos hijos (forks)**
 
+Crear procesos hijos que atiendan a los diferentes clientes, esta manera genera mucha sobrecarga debido a que por cada cliente existirá un nuevo proceso que ocupa los mismos recursos que el proceso padre. Se puede utilizar la libreria `os` para crear procesos hijos. Este metodo no es escalable.
 
-Con hilos de ejecucion (threads):
-La idea seria lanzar hilos de ejecucion donde cada uno responde a un cliente en particular.
-Existe liberias que proveen estas abstracciones en python, como ´threading´;
-Este metodo es menos costoso que la idea de forks debido a que usa los recursos del unico proceso corriendo.
+**Con hilos de ejecución (threads)**
+
+La idea seria lanzar hilos de ejecución donde cada uno responde a un cliente en particular. Existen librerías que proveen estas abstracciones en Python, como `threading`, `subprocess`, `_threads`, etc. Este método es menos costoso que la idea de forks debido a que usa los recursos del único proceso corriendo.
+
+**Con Corrutinas**
+
+De la misma forma se podría manejar las distintas ejecuciones con corrutinas, donde cada corrutina maneja una conexión. Esto tendría el beneficio de solo manejarse en un thread, lo cual ahorraría aún más los recursos. La desventaja que tiene este método es que el manejo de control con corrutinas combinado con los sockets puede ser más complejo que como se manjea con threads. Esta complejidad no vale la pena a menos que sean muchos clientes para manejar concurrentemente.
 
 ## Pregunta 2
-> Pruebe ejecutar el servidor en una máquina del laboratorio, mientras utiliza el cliente
-desde otra, hacia la ip de la máquina servidor. ¿Qué diferencia hay si se corre el
-servidor desde la IP “localhost”, “127.0.0.1” o la ip “0.0.0.0”?
+> Pruebe ejecutar el servidor en una máquina del laboratorio, mientras utiliza el cliente desde otra, hacia la ip de la máquina servidor. ¿Qué diferencia hay si se corre el servidor desde la IP “`localhost`”, “`127.0.0.1`” o la ip “`0.0.0.0`”?
 
-Tanto "localhost" y "127.0.0.1" refieren a la misma direccion de IP, se utiliza para crear una conexion con la misma computadora.
-"0.0.0.0" es un caso particular donde se utiliza como "ninguna direccion en particular".
-El valor de esta direccion dependera del contexto en que se use.
+Tanto "`localhost`" y "`127.0.0.1`" refieren a la misma dirección de IP, se utiliza para crear una conexión con la misma computadora.
+"`0.0.0.0`" es un caso particular donde se utiliza como "ninguna dirección en particular". El valor de esta dirección dependerá del contexto en que se use.
 
+# Importante
+Para correr todos los test es necesario levantar el servidor con el siguiente comando:
+
+```bash
+python3 server.py -v INFO -d testGlobal
+```
+
+La parte importante es que la verbosidad esté puesta como `INFO`. Si está puesta como `DEBUG`, se crea un cuello de botella en la consola, ya que intenta escribir múltiples veces cada byte del filename y tarda más tiempo haciendo eso que manejando el pedido por socket. Este cuello de botella es tan notable que termina lanzando el Timeout del socket, y así fallando el test.
+
+También tener en cuenta que el directorio de los test es *testGlobal*, mientras que el default del server es *testdata*, por lo que es importante que el servidor esté sirviendo el directorio *testGlobal*.
+
+Cambiamos la carpeta que se utiliza para los test porque como este los eliminaba dificultaba la disponibilidad de los archivos al levantar el servidor.
+En `tests/test_base.py` se encuentra el código con la varible `DATADIR` que hace referencia a la carpeta para los test.
 
 # Nuestra forma de trabajar
 
 Los commits que empiezan con *"Pair Programming"* son aquellos commits que fueron realizados de manera conjunta remota, mientras que los commits realizados por el usuario *"Visita"* son aquellos commits que fueron realizados de manera conjunta presencial durante el horario del laboratorio.
 
-Cuando se realizan cambios individuales se van a realizar Pull Request a la branch principal.
+Cuando se realizan cambios individuales se van a realizar **Pull Request** a la branch principal (`master`).
+
+## Modificaciones a los test
+
+### Separación
+
+Ya que algunos de los test (`big_file`, `big_filename`, `command_in_pieces`) tardaban considerablamente bastante en comparación con los demás, y para el debuggeo sería mejor aislar los test, **separamos** la suite de test en diferentes archivos para poder correrlos individualmente.
+
+Para correrlos a todos como antes se puede levantar el server en una consola y correr:
+
+```bash
+python -m unittest discover -s tests
+```
+
+O simplemente correr el comando
+
+```bash
+make
+```
+
+ya que hicimos un **Makefile** que automáticamente levantar el server y corre todos los test.
+
+También está
+
+```bash
+make short
+```
+
+para correr los tests que se ejecutan muy rápido
+
+### Cambios individuales
+
+Se modificaron dos test de manera superficial. Primero `test_multiple_commands` donde una variable llamada `len` generaba problemas ya que len es una función ya de la librería de Python.
+
+```python
+     def test_multiple_commands(self):
+         client = self.new_client()
+-        len = client.s.send(
++        socket_message_len = client.s.send(
+             'get_file_listing\r\nget_file_listing\r\n'.encode("ascii"))
+-        assert len == len(
++        assert socket_message_len == len(
+             'get_file_listing\r\nget_file_listing\r\n'.encode("ascii"))
+         status, message = client.read_response_line(TIMEOUT)
+```
+
+y otro fue acortar un poco el largo del filename
+
+```python
+    def test_big_filename(self):
+        c = self.new_client()
+-       c.send('get_metadata ' + 'x' * (5 * 2 ** 20), timeout=120)
++       c.send('get_metadata ' + 'x' * (5 * 2 ** 12), timeout=120)
+        # Le damos 4 minutos a esto
+        status, message = c.read_response_line(TIMEOUT * 6)
+```
+
+ya que conceptualmente testean lo mismo solo que una tarda muchísimo más tiempo que la otra.
+
+---
 
 ## PEP8
+
+[PEP8](https://peps.python.org/pep-0008/) es una guía que indica las convenciones estilísticas a seguir para escribir código Python. Se trata de un conjunto de recomendaciones cuyo objetivo es ayudar a escribir código más legible y abarca desde cómo nombrar variables, al número máximo de caracteres que una línea debe tener.
+
+**Comando para corroborar que se cumpla PEP8**
 
 ```bash
 pycodestyle .
@@ -207,18 +281,25 @@ fuser -n tcp 19500
 
 ## Cómo cerrar un puerto
 
+Durante la implementación del laboratorio se nos presentó el problema de que cuando se cerraba el servidor de manera correcta el socket permanece reservado por el OS. Utilizábamos los siguientes comandos para cerrar el puerto:
+
 ```bash
 sudo kill $(sudo lsof -t -i:19500)
 ```
+
+o
 
 ```bash
 fuser -k -n tcp 19500
 ```
 
+Pero aún así hay que esperar un tiempo para que el OS devuelva el socket (5s a 1min).
+
 > https://poesiabinaria.net/2017/07/cerrar-puerto-tcp-ocupado-una-aplicacion-gnulinux/
 
 # Implementaciones
 
-- [x] Manejador de excepciones propias
-- [x] Configuración del logger del lado del server con distintos niveles
-- [x] Implementación de un buffer del lado del parser para optimizar el uso del socket
+- [x] Manejador de excepciones propias.
+- [x] Configuración del logger del lado del server con distintos niveles.
+- [x] Implementación de un buffer del lado del parser para optimizar el uso del socket.
+- [x] Manejo de múltiples clientes concurrentes por medio del uso de threads.
