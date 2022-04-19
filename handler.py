@@ -1,23 +1,32 @@
-from http import client
-from logging import exception
-import sys
 import os
 import base64
 import constants
 
-from client import Client
-from asyncore import read
+from logger import Logger
 from command import Command
-from HFTP_Exception import HFTPException
+from hftp_exception import (
+    BadOffsetException,
+    FileNotFoundException,
+    InvalidArgumentsException,
+    InvalidCommandException
+)
+
+
+logger = Logger()
 
 
 class Handler():
     """
     Manejador de comandos.
     """
-    def __init__(self, command: Command):
+    def __init__(self, command: Command, base_dir: str):
+        logger.log_debug(
+            f"Creating Handler Object with command: {command} "
+            f"and base_dir: {base_dir}"
+        )
         self.command: Command = command
         self.status = constants.HANDLER_STATUS_OK
+        self.base_dir = base_dir
 
     def handle(self):
         """
@@ -25,7 +34,10 @@ class Handler():
 
         Si recibe un comando inválido levanta una excepción y finaliza.
         """
-        print(f">> Executing command: {self.command.name} {' '.join(self.command.arguments)}")
+        logger.log_info(
+            f"Executing command: {self.command.name} "
+            f"{' '.join(self.command.arguments)}"
+        )
 
         # Corroboramos si el comando es válido
         if (self.command.name == self.command.COMMAND_GET_FILE_LISTING):
@@ -38,64 +50,105 @@ class Handler():
             return self.handle_quit()
         else:
             # No encontró ningún comando válido...
-            exception = HFTPException(
-                constants.INVALID_COMMAND,
-                "Invalid Command",
-                constants.HANDLER_INVALID_COMMAND
+            logger.log_debug(
+                "Could not find handler function for "
+                f"'{self.command.name}' command"
             )
-            raise exception
+
+            self.status = constants.HANDLER_INVALID_COMMAND
+            raise InvalidCommandException()
 
     def handle_get_file_listing(self):
         """
         Ejecuta el comando `get_file_listing`
         """
+        logger.log_debug("Executing handle_get_file_listing")
+
         if(len(self.command.arguments) == 0):
-            directory = os.listdir()
+            directory = os.listdir(self.base_dir)
         else:
-            exception = HFTPException(constants.INVALID_ARGUMENTS,
-                    "Invalid amount of arguments")
-            self.status = constants.HANDLER_INVALID_COMMAND
-            raise exception
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
         return directory
 
     def handle_get_metadata(self):
         """
         Ejecuta el comando `get_metadata`
         """
+        logger.log_debug("Executing handle_get_metadata")
+
         if (len(self.command.arguments) == 1):
-            size = os.path.getsize(self.command.arguments[0])
+            path = self.base_dir + "/" + self.command.arguments[0]
+            logger.log_debug(f"getting metadata of file '{path}'")
+
+            try:
+                size = os.path.getsize(path)
+                logger.log_debug(f"size of {path}: {size}")
+            except (FileNotFoundError, OSError):
+                self.status = constants.FILE_NOT_FOUND
+                raise FileNotFoundException()
         else:
-            exception = HFTPException(constants.INVALID_ARGUMENTS,
-                    "Invalid amount of arguments")
-            self.status = constants.HANDLER_INVALID_COMMAND
-            raise exception
-        return size
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
+
+        return_list = list()
+        return_list.append(str(size))
+        return return_list
 
     def handle_get_slice(self):
         """
         Ejecuta el comando `get_slice`
         """
-        if (len(self.command.arguments) == 3 ):
-            file_size = os.path.getsize(self.command.arguments[0])
-            request_size = self.command.arguments[1]+self.command.arguments[2]
+        logger.log_debug("Executing handle_get_slice")
+
+        if (len(self.command.arguments) == 3):
+            path = f"{self.base_dir}/{self.command.arguments[0]}"
+            file_size = os.path.getsize(path)
+            try:
+                offset = int(self.command.arguments[1])
+                slice_size = int(self.command.arguments[2])
+                request_size = offset + slice_size
+            except ValueError:
+                raise InvalidArgumentsException()
+
             if (file_size >= request_size):
-                file = open(self.command.arguments[0],"r")
-                data = base64.b64encode(read(file, request_size))
+                try:
+                    # No es necesario llamar a close ya que
+                    # el 'with' lo hace automáticamente
+                    # rb -> read bytes
+                    with open(path, "rb") as file:
+                        # Se mueve al punto dónde tiene que empezar a leer
+                        file.seek(offset)
+                        encoded_read = file.read(slice_size)
+                        logger.log_debug(
+                            "encoded_read (of size "
+                            f"{request_size}): {encoded_read}")
+
+                    # Se encodea en base64 para que entre en tipo ASCII
+                    data = base64.b64encode(encoded_read).decode('ascii')
+                    logger.log_debug(f"base64 encoded data: {data}")
+
+                    return_list = list()
+                    return_list.append(data)
+                except (FileNotFoundError, OSError):
+                    self.status = constants.FILE_NOT_FOUND
+                    raise FileNotFoundException()
             else:
-                exception = HFTPException(constants.BAD_OFFSET,
-                        "Amount of bytes out of bounds")
                 self.status = constants.HANDLER_INVALID_COMMAND
-                raise exception
+                raise BadOffsetException()
         else:
-            exception = HFTPException(constants.INVALID_ARGUMENTS,
-                    "Amount of arguments must be 3")
-            self.status = constants.HANDLER_INVALID_COMMAND
-            raise exception
-        return data
-        # TODO @Ernesto
+            self.status = constants.HANDLER_INVALID_ARGUMENTS
+            raise InvalidArgumentsException()
+        return return_list
 
     def handle_quit(self):
         """
         Ejecuta el comando `quit`
         """
+        logger.log_debug(f"Executing handle_quit")
+
+        if(len(self.command.arguments) != 0):
+            raise InvalidArgumentsException()
+
         self.status = constants.HANDLER_STATUS_EXIT
+        return list()

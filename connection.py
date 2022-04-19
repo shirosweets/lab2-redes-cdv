@@ -4,16 +4,17 @@
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
 
 # Imports de librerías
-import socket
-from base64 import b64encode
-from HFTP_Exception import HFTPException, InternalErrorException
-
+import traceback
+from hftp_exception import HFTPException, InternalErrorException
 
 # Imports locales
 import constants
-from parser import Parser, MalformedParserException, UnknownParserException
+from logger import Logger
 from handler import Handler
 from response_manager import ResponseManager
+from parser import Parser, MalformedParserException, UnknownParserException
+
+logger = Logger()
 
 
 class Connection(object):
@@ -24,7 +25,10 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        # NOTE FALTA Inicializar atributos de Connection
+        logger.log_debug(
+            f"Connection with socket {socket}"
+            f" and directory: {directory} created."
+        )
         self.socket = socket
         self.current_directory = directory
 
@@ -32,7 +36,8 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        print(f"START handle")  # FIXME
+        logger.log_info(f"STARTING a connection with client")
+
         # Instanciamos Parser
         parser = Parser(self.socket)
 
@@ -46,39 +51,51 @@ class Connection(object):
                 try:
                     # Obtenemos el comando parseado
                     command = parser.get_next_command()
+                    logger.log_info(f"Command fetched from socket: {command}")
+
                 except MalformedParserException as malformedException:
-                    print(f"{malformedException}")  # FIXME
+                    logger.log_info(f"{malformedException}")
                     response_manager.send_error(malformedException)
                     break
 
                 except UnknownParserException as UnknownException:
-                    print(f"{UnknownException}")  # FIXME
+                    logger.log_info(f"{UnknownException}")
                     response_manager.send_error(UnknownException)
                     break
 
                 try:
                     # Instancia de Handler
-                    handler = Handler(command)
+                    handler = Handler(command, self.current_directory)
+                    logger.log_debug(f"handler.status = {handler.status}")
+
                     # Procedimiento para atender el comando
-                    response = handler.handle()  # FIXME: Arreglar los multiple tipos
+                    response = handler.handle()
+                    logger.log_debug(
+                        f"command handler returned {response} "
+                        f"of type: {type(response)}"
+                    )
                 except HFTPException as hftpException:
                     response_manager.send_error(hftpException)
 
                 response_manager.send_response(
-                    constants.CODE_OK, command, response
+                    constants.CODE_OK,
+                    command,
+                    response
                 )
 
                 if handler.status == constants.HANDLER_STATUS_EXIT:
+                    logger.log_info(f"User request Quit. Closing Socket")
                     break
 
         except Exception as exception:
-            print(
+            logger.log_error(
                 f"CODE ERROR: {constants.INTERNAL_ERROR} - "
                 f"Internal Error. Exception: {exception}"
             )
+            logger.log_debug(traceback.format_exc())
             response_manager.send_error(InternalErrorException(exception))
 
         # Cierra la conexión
         self.socket.close()
 
-        print(f"END handle")  # FIXME
+        logger.log_info(f"ENDING a connection with client")
