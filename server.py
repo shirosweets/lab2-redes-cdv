@@ -10,9 +10,11 @@ import sys
 import socket
 import signal
 import logging
+import _thread
 import optparse
 import constants
 
+from time import sleep
 from logger import Logger
 from connection import Connection
 
@@ -25,6 +27,8 @@ class Server(object):
     El servidor, que crea y atiende el socket en la dirección y puerto
     especificados donde se reciben nuevas conexiones de clientes.
     """
+
+    MAX_AMOUNT_CLIENTS = 5
 
     def __init__(
         self,
@@ -43,18 +47,56 @@ class Server(object):
         self.socket.bind((addr, port))
 
         # Listening
-        self.socket.listen(1)
+        self.socket.listen(self.MAX_AMOUNT_CLIENTS)
+
+    def handle_client_listen(self, lock: _thread.LockType):
+        lock.acquire()
+
+        while True:
+            # Aceptar una conexión al server, crear una
+            # connection para la conexión y atenderla hasta que termine.
+            connection = Connection(self.socket.accept()[0], self.directory)
+            connection.handle()
+
+        lock.release()  # FIXME Check
 
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
-        while True:
-            # Aceptar una conexión al server, crear una
-            # connection para la conexión y atenderla hasta que termine.
-            connection = Connection(self.socket.accept()[0], self.directory)
-            connection.handle()
+        self.threads = []
+        self.locks = []
+        for i in range(self.MAX_AMOUNT_CLIENTS):
+            logger.log_debug(f"Starting Connection listener for client {i}")
+            lock = _thread.allocate_lock()
+            self.locks.append(lock)
+
+            current_thread_id = _thread.start_new_thread(
+                self.handle_client_listen,
+                (lock,)
+            )
+            self.threads.append(current_thread_id)
+            logger.log_debug(
+                f">> Thread_id {current_thread_id} for client {i} started"
+            )
+
+        sleep(1)
+        self.get_all_locks()
+
+    def get_all_locks(self):
+        """
+        No retorna hasta que todos los locks estén disponibles
+        """
+        for lock in self.locks:
+            lock.acquire()
+
+    def close(self):
+        """
+        Cierra todas las conexiones activas.
+        """
+        #kill()
+        pass
 
 
 def main():
@@ -106,15 +148,15 @@ def main():
         server = Server(options.address, port, options.datadir)
 
         def handle_sigterm(signalNumber, frame):
-            logger.log_warning(f"Received SIGTERM. Closing Socket")
-            server.socket.close()
+            logger.log_warning(f"Received SIGTERM. Closing Sockets")
+            server.close()
             sys.exit()
 
         signal.signal(signal.SIGTERM, handle_sigterm)
 
         server.serve()
     except KeyboardInterrupt as keyboardInterrupt:
-        server.socket.close()
+        server.close()
         raise keyboardInterrupt
 
 
