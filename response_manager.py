@@ -44,7 +44,7 @@ class ResponseManager():
         logger.log_info(f"Socket ===> {line}\\r\\n")
 
         try:
-            self.socket.send((line + "\r\n").encode("ascii"))
+            self.socket.send((line + constants.EOL).encode("ascii"))
         except (IOError, BrokenPipeError) as err:
             if err.errno == errno.EPIPE or isinstance(err, BrokenPipeError):
                 logger.log_error(
