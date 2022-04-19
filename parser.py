@@ -60,7 +60,7 @@ class Parser(object):
             words = command_str.split(" ")
             logger.log_debug(f"command_str.split: {words}")
 
-            words[-1] = words[-1].strip("\r\n")
+            words[-1] = words[-1].strip(constants.EOL)
             logger.log_info(f"words: {words}")
         else:
             logger.log_warning("Malformed command. Raising exception")
